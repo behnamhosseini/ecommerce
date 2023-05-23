@@ -27,3 +27,10 @@
 
 
 use Illuminate\Support\Facades\Route;
+use PERSON\Controller\Api\v1\PersonController;
+
+Route::group(['prefix' => 'api/v1' , 'namespace' => 'v1'], function () use ($router) {
+    Route::resource('/', 'PersonController');
+});
+
+
