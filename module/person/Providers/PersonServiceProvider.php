@@ -2,6 +2,7 @@
 
 namespace PERSON\Providers;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class PersonServiceProvider extends ServiceProvider
@@ -13,11 +14,8 @@ class PersonServiceProvider extends ServiceProvider
 
     public function router(): void
     {
-        $this->app->router->group([
-            'namespace' => '\PERSON\Controller\Api',
-        ], function ($router) {
-            require __DIR__ . '/../routes/api.php';
-        });
+        Route::namespace('\PERSON\Controller\Api')
+            ->group(__DIR__ . '/../routes/api.php');
     }
 
 }
