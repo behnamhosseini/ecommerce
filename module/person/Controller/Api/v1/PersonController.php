@@ -12,7 +12,7 @@ class PersonController extends Controller
      */
     public function index()
     {
-        dd('ds');
+
     }
 
     /**
