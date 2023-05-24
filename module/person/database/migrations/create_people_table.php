@@ -14,7 +14,7 @@ return new class extends Migration
             $table->boolean('active')->default(0);
             $table->string('first_name', 50);
             $table->string('last_name', 50);
-            $table->integer('social_id')->unsigned();
+            $table->integer('social_id')->unsigned()->unique();
             $table->date('birth_date');
             $table->string('mobile_number', 15)->unique();
             $table->string('mobile_number_description', 100)->unique();
