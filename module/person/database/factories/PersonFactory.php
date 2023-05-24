@@ -14,11 +14,10 @@ class PersonFactory extends Factory
     public function definition()
     {
         return [
-            'demonstration_name' => $this->faker->name(),
             'active' => $this->faker->boolean(),
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
-            'social_id' => $this->faker->unique()->randomNumber(10),
+            'social_id' => $this->faker->unique()->randomNumber(),
             'birth_date' => $this->faker->date(),
             'mobile_number' => $this->faker->unique()->numerify('###########'),
             'mobile_number_description' => $this->faker->unique()->text(100),

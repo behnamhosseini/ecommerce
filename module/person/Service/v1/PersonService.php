@@ -3,6 +3,8 @@
 namespace PERSON\Service\v1;
 
 
+use PERSON\Repository\v1\PersonRepositoryInterface;
+
 class PersonService implements PersonServiceInterface
 {
     private $personRepository;

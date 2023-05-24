@@ -4,7 +4,6 @@ namespace PERSON\database\seeders;
 
 use Illuminate\Database\Seeder;
 use PERSON\Models\Person;
-
 class PersonSeeder extends Seeder
 {
 

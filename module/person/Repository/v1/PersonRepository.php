@@ -3,10 +3,9 @@
 
 namespace PERSON\Repository\v1;
 
-
 use PERSON\Models\Person;
 
-class PersonRepository
+class PersonRepository  implements PersonRepositoryInterface
 {
     public function create(array $data)
     {

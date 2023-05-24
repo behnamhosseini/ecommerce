@@ -29,7 +29,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'api/v1', 'namespace' => 'v1'], function () {
-    Route::resource('person', 'PersonController');
+    Route::resource('person', 'PersonController')->except(['create']);
 });
 
 
