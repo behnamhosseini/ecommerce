@@ -13,7 +13,7 @@ class PersonServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        $this->router();
+        $this->loadMigrationsFrom(__DIR__ . '/../../modules/Person/database/migrations');
     }
 
     public function register()
@@ -34,5 +34,4 @@ class PersonServiceProvider extends ServiceProvider
         Route::namespace('\PERSON\Controller\Api')
             ->group(__DIR__ . '/../routes/api.php');
     }
-
 }
