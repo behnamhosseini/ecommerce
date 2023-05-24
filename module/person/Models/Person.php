@@ -21,4 +21,9 @@ class Person extends Model
         'email',
         'email_description',
     ];
+
+    public function getDemonstrationName()
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
 }
