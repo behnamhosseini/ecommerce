@@ -17,7 +17,10 @@ class PersonResource extends JsonResource
             'social_id' => $this->social_id,
             'birth_date' => $this->birth_date,
             'mobile_number' => $this->mobile_number,
+            'mobile_number_description' => $this->mobile_number_description,
             'email' => $this->email,
+            'email_description' => $this->email_description,
+            'active' => $this->active,
         ];
     }
 }
