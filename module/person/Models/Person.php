@@ -10,7 +10,6 @@ class Person extends Model
     use HasFactory;
 
     protected $fillable = [
-        'demonstration_name',
         'active',
         'first_name',
         'last_name',
@@ -22,7 +21,7 @@ class Person extends Model
         'email_description',
     ];
 
-    public function getDemonstrationName()
+    public function getDemonstrationNameAttribute()
     {
         return $this->first_name . ' ' . $this->last_name;
     }
