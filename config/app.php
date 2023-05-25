@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 use PERSON\Providers\PersonServiceProvider;
+use PRODUCT\Providers\ProductServiceProvider;
 
 return [
 
@@ -169,7 +170,8 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        PersonServiceProvider::class
+        PersonServiceProvider::class,
+        ProductServiceProvider::class,
     ])->toArray(),
 
     /*

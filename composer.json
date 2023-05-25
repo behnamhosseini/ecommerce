@@ -26,7 +26,7 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "PERSON\\": "module/person/",
-            "ITEM\\": "module/item/",
+            "PRODUCT\\": "module/product/",
             "INVOICE\\": "module/invoice/"
         }
     },
