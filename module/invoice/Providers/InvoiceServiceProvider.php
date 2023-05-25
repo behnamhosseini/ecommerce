@@ -1,0 +1,47 @@
+<?php
+
+namespace INVOICE\Providers;
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
+use INVOICE\Controller\Api\v1\InvoiceController;
+use INVOICE\Repository\v1\InvoiceRepository;
+use INVOICE\Repository\v1\InvoiceRepositoryInterface;
+use INVOICE\Service\v1\InvoiceService;
+use INVOICE\Service\v1\InvoiceServiceInterface;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class InvoiceServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        $this->loadMigrationsFrom(base_path('\module\invoice\database\migrations'));
+        Factory::guessFactoryNamesUsing(function (string $modelName) {
+            return 'INVOICE\\database\\factories\\' . class_basename($modelName) . 'Factory';
+        });
+        $this->router();
+    }
+
+    public function register()
+    {
+        $this->app->bind(
+            InvoiceRepositoryInterface::class,
+            InvoiceRepository::class
+        );
+
+
+        $this->app
+            ->when(InvoiceController::class)
+            ->needs(InvoiceServiceInterface::class)
+            ->give(function ($app) {
+                return $app->make(InvoiceService::class, [$app->make(InvoiceRepositoryInterface::class)]);
+            });
+    }
+
+    public function router(): void
+    {
+        Route::namespace('\INVOICE\Controller\Api')
+            ->group(__DIR__ . '/../routes/api.php');
+
+    }
+}
