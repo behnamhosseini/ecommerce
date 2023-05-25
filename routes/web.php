@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use PERSON\database\factories\PersonFactory;
+use PERSON\Models\Person;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +15,3 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
