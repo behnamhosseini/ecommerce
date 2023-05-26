@@ -65,7 +65,7 @@ class InvoiceService implements InvoiceServiceInterface
                 $totalSum += $totalDue;
 
                 if ($product) {
-                    $invoice->items()->create([
+                    $invoice->invoiceItems()->create([
                         'product_id' => $product->id,
                         'quantity' => $quantity,
                         'price' => $product->selling_price,
@@ -155,27 +155,27 @@ class InvoiceService implements InvoiceServiceInterface
         });
     }
 
-    protected function calculateAmount(float $quantity, int $price): int
+    public function calculateAmount(float $quantity, int $price): int
     {
         return (int)($quantity * $price);
     }
 
-    protected function calculateDiscount(float $amount, int $discount): int
+    public function calculateDiscount(float $amount, int $discount): int
     {
         return (int)($amount * $discount / 100);
     }
 
-    protected function calculateTotalAfterDiscount(int $amount, int $discount): int
+    public function calculateTotalAfterDiscount(int $amount, int $discount): int
     {
         return $amount - $discount;
     }
 
-    protected function calculateTax(int $totalAfterDiscount, int $tax): int
+    public function calculateTax(int $totalAfterDiscount, int $tax): int
     {
         return $totalAfterDiscount * $tax / 100;
     }
 
-    protected function calculateTotalDue(int $totalAfterDiscount, int $tax): int
+    public function calculateTotalDue(int $totalAfterDiscount, int $tax): int
     {
         return $totalAfterDiscount + $tax;
     }

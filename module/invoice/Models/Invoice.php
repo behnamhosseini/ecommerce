@@ -20,7 +20,7 @@ class Invoice extends Model
         return $this->belongsTo(Person::class);
     }
 
-    public function items()
+    public function invoiceItems()
     {
         return $this->hasMany(InvoiceItem::class);
     }

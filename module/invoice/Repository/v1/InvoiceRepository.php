@@ -10,12 +10,12 @@ class InvoiceRepository  implements InvoiceRepositoryInterface
 {
     public function getAll()
     {
-        return Invoice::with('items')->get();
+        return Invoice::with('invoiceItems')->get();
     }
 
     public function findById(int $id): ?Invoice
     {
-        return Invoice::with('items')->find($id);
+        return Invoice::with('invoiceItems')->find($id);
     }
 
     public function create(array $data): Invoice
