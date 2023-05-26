@@ -4,6 +4,7 @@
 namespace INVOICE\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateInvoiceRequest extends FormRequest
 {
@@ -14,15 +15,9 @@ class UpdateInvoiceRequest extends FormRequest
 
     public function rules()
     {
-        $invoiceId = $this->route('invoice');
-
         return [
-            'item_name' => 'sometimes|required|string|max:100',
-            'active' => 'sometimes|required|boolean',
-            'selling_price' => 'sometimes|required|integer',
-            'tax' => 'sometimes|numeric|between:0,100',
-            'discount_percentage' => 'sometimes|numeric|between:0,100',
-            'inventory' => 'sometimes|required|numeric',
+            'person_id' => 'required|integer|',Rule::exists('people', 'id'),
+            'items' => 'required|array',
         ];
     }
 }

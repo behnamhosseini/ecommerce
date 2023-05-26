@@ -4,6 +4,7 @@
 namespace INVOICE\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateInvoiceRequest extends FormRequest
 {
@@ -15,10 +16,10 @@ class CreateInvoiceRequest extends FormRequest
     public function rules()
     {
         return [
-            'person_id' => 'required|integer',
+            'person_id' => 'required|integer|',Rule::exists('people', 'id'),
             'items' => 'required|array',
-            'items.*.product_id' => 'required|integer',
-            'items.*.quantity' => 'required|numeric|min:0',
+            'items.*' => 'integer',
+            'items.*.*' => 'integer',
         ];
     }
 }

@@ -10,7 +10,7 @@ class InvoiceRepository  implements InvoiceRepositoryInterface
 {
     public function getAll()
     {
-        return Invoice::all();
+        return Invoice::with('items')->get();
     }
 
     public function findById(int $id): ?Invoice
@@ -26,6 +26,8 @@ class InvoiceRepository  implements InvoiceRepositoryInterface
     public function update(int $id, array $data): bool
     {
         $invoice = Invoice::find($id);
+        $invoice->total_sum = 1;
+        $invoice->save();
         if ($invoice) {
             return $invoice->update($data);
         }
@@ -37,6 +39,7 @@ class InvoiceRepository  implements InvoiceRepositoryInterface
     {
         $invoice = Invoice::find($id);
         if ($invoice) {
+            $invoice->invoiceItems()->delete();
             return $invoice->delete();
         }
 

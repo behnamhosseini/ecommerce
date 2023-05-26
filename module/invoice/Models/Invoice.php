@@ -12,6 +12,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'person_id',
+        'total_sum',
     ];
 
     public function person()

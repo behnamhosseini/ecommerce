@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('person_id')->constrained('people')->onDelete('cascade');
+            $table->decimal('total_sum', 12, 0)->unsigned()->default(0);
             $table->timestamps();
         });
 
@@ -25,7 +26,6 @@ return new class extends Migration
             $table->decimal('total_after_discount', 12, 0)->unsigned()->default(0);
             $table->decimal('tax', 12, 0)->unsigned()->default(0);
             $table->decimal('total_due', 12, 0)->unsigned()->default(0);
-            $table->decimal('total_sum', 12, 0)->unsigned()->default(0);
             $table->timestamps();
         });
     }

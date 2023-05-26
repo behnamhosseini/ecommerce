@@ -10,9 +10,9 @@ interface InvoiceServiceInterface
 
     public function getAllInvoices();
 
-    public function createInvoice(array $data): ?Invoice;
+    public function createInvoice(array $data);
 
-    public function updateInvoice(int $id, array $data): ?Invoice;
+    public function updateInvoice(int $id, array $data);
 
     public function deleteInvoice(int $id): bool;
 }

@@ -18,7 +18,8 @@ class InvoiceFactory extends Factory
         return [
             'person_id' => function () {
                 return app()->make(PersonFactory::class)->create()->id;
-            }
+            },
+            'total_sum' => $this->faker->randomNumber(5),
         ];
     }
 }
