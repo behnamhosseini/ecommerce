@@ -2,6 +2,7 @@
 
 namespace INVOICE\Providers;
 
+use Illuminate\Database\Eloquent\Factories\Factory as EloquentFactory;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -11,33 +12,44 @@ use INVOICE\Repository\v1\InvoiceRepositoryInterface;
 use INVOICE\Service\v1\InvoiceService;
 use INVOICE\Service\v1\InvoiceServiceInterface;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use PRODUCT\Repository\v1\ProductRepositoryInterface;
+use PRODUCT\Service\v1\ProductService;
+use PRODUCT\Service\v1\ProductServiceInterface;
 
 class InvoiceServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        Factory::guessFactoryNamesUsing(function (string $modelName) {
-            return 'PERSON\\database\\factories\\' . class_basename($modelName) . 'Factory';
-        });
         $this->loadMigrationsFrom(base_path('\module\invoice\database\migrations'));
         $this->router();
     }
 
     public function register()
     {
+        $this->app->extend(EloquentFactory::class, function ($factory) {
+            $factory->useNamespace('INVOICE\\database\\factories');
+
+            return $factory;
+        });
 
         $this->app->bind(
             InvoiceRepositoryInterface::class,
             InvoiceRepository::class
         );
 
-
+        $this->app
+            ->when(InvoiceService::class)
+            ->needs(ProductServiceInterface::class)
+            ->give(function ($app) {
+                return $app->make(ProductService::class, [$app->make(ProductRepositoryInterface::class)]);
+            });
         $this->app
             ->when(InvoiceController::class)
             ->needs(InvoiceServiceInterface::class)
             ->give(function ($app) {
-                return $app->make(InvoiceService::class, [$app->make(InvoiceRepositoryInterface::class)]);
+                return $app->make(InvoiceService::class, [$app->make(InvoiceRepositoryInterface::class),$app->make(ProductRepositoryInterface::class)]);
             });
+
     }
 
     public function router(): void

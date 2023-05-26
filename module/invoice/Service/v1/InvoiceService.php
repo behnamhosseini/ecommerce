@@ -2,18 +2,21 @@
 
 namespace INVOICE\Service\v1;
 
-
 use INVOICE\Models\Invoice;
+use INVOICE\Models\InvoiceItem;
 use INVOICE\Repository\v1\InvoiceRepositoryInterface;
+use Illuminate\Support\Facades\DB;
+use PRODUCT\Service\v1\ProductServiceInterface;
 
 class InvoiceService implements InvoiceServiceInterface
 {
-
     private $invoiceRepository;
+    private $productService;
 
-    public function __construct(InvoiceRepositoryInterface $invoiceRepository)
+    public function __construct(InvoiceRepositoryInterface $invoiceRepository, ProductServiceInterface $productService)
     {
         $this->invoiceRepository = $invoiceRepository;
+        $this->productService = $productService;
     }
 
     public function getAllInvoices()
@@ -28,48 +31,50 @@ class InvoiceService implements InvoiceServiceInterface
 
     public function createInvoice(array $data): ?Invoice
     {
-        // Validation and business logic
-        // Calculate amount, total after discount, tax, etc.
+        return DB::transaction(function () use ($data) {
+            $invoice = $this->invoiceRepository->create($data);
 
-        $invoice = $this->invoiceRepository->create($data);
+            $invoiceItems = [];
+            foreach ($data['invoice_items'] as $itemId) {
+                $product = $this->productService->getProductById($itemId);
+                if ($product) {
+                    $invoiceItems[] = new InvoiceItem([
+                        'product_id' => $product->id,
+                        'quantity' => $product->quantity,
+                        'price' => $product->price,
+                       'amount' => $this->calculateAmount($product->quantity, $product->price),
+                        'discount' => $this->calculateDiscount($this->calculateAmount($product->quantity, $product->price), $product->discount),
+                        'total_after_discount' => $this->calculateTotalAfterDiscount($this->calculateAmount($product->quantity, $product->price), $product->discount),
+                        'tax' => $this->calculateTax($this->calculateTotalAfterDiscount($this->calculateAmount($product->quantity, $product->price), $product->discount), $product->tax),
+                        'total_due' => $this->calculateTotalDue($this->calculateTotalAfterDiscount($this->calculateAmount($product->quantity, $product->price), $product->discount), $product->tax),
+                    ]);
+                }
+            }
 
-        // Fire the event
-//        event(new InvoiceCreated($invoice));
+            $invoice->items()->saveMany($invoiceItems);
 
-        return $invoice;
+            return $invoice;
+        });
     }
 
     public function updateInvoice(int $id, array $data): ?Invoice
     {
-        // Validation and business logic
-        // Calculate amount, total after discount, tax, etc.
-
-        $invoice = $this->invoiceRepository->update($id, $data);
-
-        // Fire the event
-//        event(new InvoiceUpdated($invoice));
-
-        return $invoice;
+        //ToDo
     }
 
     public function deleteInvoice(int $id): bool
     {
-        $invoice = $this->invoiceRepository->getById($id);
-
-        $this->invoiceRepository->delete($id);
-
-        // Fire the event
-//        event(new InvoiceDeleted($invoice));
+        //ToDo
     }
 
     public function calculateAmount(float $quantity, int $price): int
     {
-        return (int) ($quantity * $price);
+        return (int)($quantity * $price);
     }
 
-    public function calculateDiscount(float $amount, int $discount) :int
+    public function calculateDiscount(float $amount, int $discount): int
     {
-        return (int) ($amount * $discount  / 100 );
+        return (int)($amount * $discount / 100);
     }
 
     public function calculateTotalAfterDiscount(int $amount, int $discount): int

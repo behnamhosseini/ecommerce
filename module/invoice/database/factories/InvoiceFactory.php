@@ -6,6 +6,7 @@ namespace INVOICE\database\factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use INVOICE\Models\Invoice;
+use PERSON\database\factories\PersonFactory;
 use PERSON\Models\Person;
 
 class InvoiceFactory extends Factory
@@ -16,9 +17,8 @@ class InvoiceFactory extends Factory
     {
         return [
             'person_id' => function () {
-                return Person::factory()->create()->id;
-            },
-            'total_sum' => $this->faker->randomNumber(5),
+                return app()->make(PersonFactory::class)->create()->id;
+            }
         ];
     }
 }

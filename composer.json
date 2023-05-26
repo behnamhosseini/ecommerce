@@ -26,8 +26,11 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "PERSON\\": "module/person/",
+            "PERSON\\Factories\\": "modules/person/database/factories",
             "PRODUCT\\": "module/product/",
-            "INVOICE\\": "module/invoice/"
+            "PRODUCT\\Factories\\": "modules/product/database/factories",
+            "INVOICE\\": "module/invoice/",
+            "INVOICE\\Factories\\": "modules/invoice/database/factories"
         }
     },
     "autoload-dev": {

@@ -5,6 +5,8 @@ namespace INVOICE\tests\Unit;
 use INVOICE\Repository\v1\InvoiceRepository;
 use INVOICE\Service\v1\InvoiceService;
 use PHPUnit\Framework\TestCase;
+use PRODUCT\Repository\v1\ProductRepository;
+use PRODUCT\Service\v1\ProductService;
 
 class InvoiceServiceTest extends TestCase
 {
@@ -13,7 +15,7 @@ class InvoiceServiceTest extends TestCase
      */
     public function testCalculateAmount(float $quantity, int $price, int $expectedResult)
     {
-        $calculation = new InvoiceService(new InvoiceRepository());
+        $calculation = new InvoiceService(new InvoiceRepository(),new ProductService(new ProductRepository()));
         $result = $calculation->calculateAmount($quantity, $price);
 
         $this->assertEquals($expectedResult, $result);
@@ -33,7 +35,7 @@ class InvoiceServiceTest extends TestCase
      */
     public function testCalculateDiscount(float $amount, int $discount, int $expectedResult)
     {
-        $calculation = new InvoiceService(new InvoiceRepository());
+        $calculation = new InvoiceService(new InvoiceRepository(),new ProductService(new ProductRepository()));
         $result = $calculation->calculateDiscount($amount, $discount);
 
         $this->assertEquals($expectedResult, $result);
@@ -53,7 +55,7 @@ class InvoiceServiceTest extends TestCase
      */
     public function testCalculateTotalAfterDiscount(int $amount, int $discount, int $expectedResult)
     {
-        $calculation = new InvoiceService(new InvoiceRepository());
+        $calculation = new InvoiceService(new InvoiceRepository(),new ProductService(new ProductRepository()));
         $result = $calculation->calculateTotalAfterDiscount($amount, $discount);
 
         $this->assertEquals($expectedResult, $result);
@@ -73,7 +75,7 @@ class InvoiceServiceTest extends TestCase
      */
     public function testCalculateTax(int $totalAfterDiscount, int $tax, int $expectedResult)
     {
-        $calculation = new InvoiceService(new InvoiceRepository());
+        $calculation = new InvoiceService(new InvoiceRepository(),new ProductService(new ProductRepository()));
         $result = $calculation->calculateTax($totalAfterDiscount, $tax);
 
         $this->assertEquals($expectedResult, $result);
@@ -93,7 +95,7 @@ class InvoiceServiceTest extends TestCase
      */
     public function testCalculateTotalDue(int $totalAfterDiscount, int $tax, int $expectedResult)
     {
-        $calculation = new InvoiceService(new InvoiceRepository());
+        $calculation = new InvoiceService(new InvoiceRepository(),new ProductService(new ProductRepository()));
         $result = $calculation->calculateTotalDue($totalAfterDiscount, $tax);
 
         $this->assertEquals($expectedResult, $result);
@@ -113,7 +115,7 @@ class InvoiceServiceTest extends TestCase
      */
     public function testCalculateTotalSum(array $amounts, int $expectedResult)
     {
-        $calculation = new InvoiceService(new InvoiceRepository());
+        $calculation = new InvoiceService(new InvoiceRepository(),new ProductService(new ProductRepository()));
         $result = $calculation->calculateTotalSum($amounts);
 
         $this->assertEquals($expectedResult, $result);

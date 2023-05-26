@@ -17,10 +17,10 @@ class InvoiceItemFactory extends Factory
     {
         return [
             'invoice_id' => function () {
-                return Invoice::factory()->create()->id;
+                return  app()->make(InvoiceFactory::class)->create()->id;
             },
             'product_id' => function () {
-                return Product::factory()->create()->id;
+                return app()->make(PersonFactory::class)->create()->id;
             },
             'quantity' => $this->faker->randomFloat(2, 0, 999999.99),
             'price' => $this->faker->randomNumber(6),
