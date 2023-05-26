@@ -2,6 +2,7 @@
 
 namespace INVOICE\Providers;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use INVOICE\Controller\Api\v1\InvoiceController;
@@ -15,15 +16,16 @@ class InvoiceServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        $this->loadMigrationsFrom(base_path('\module\invoice\database\migrations'));
         Factory::guessFactoryNamesUsing(function (string $modelName) {
-            return 'INVOICE\\database\\factories\\' . class_basename($modelName) . 'Factory';
+            return 'PERSON\\database\\factories\\' . class_basename($modelName) . 'Factory';
         });
+        $this->loadMigrationsFrom(base_path('\module\invoice\database\migrations'));
         $this->router();
     }
 
     public function register()
     {
+
         $this->app->bind(
             InvoiceRepositoryInterface::class,
             InvoiceRepository::class

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use INVOICE\Providers\InvoiceServiceProvider;
 use PERSON\Providers\PersonServiceProvider;
 use PRODUCT\Providers\ProductServiceProvider;
 
@@ -172,6 +173,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         PersonServiceProvider::class,
         ProductServiceProvider::class,
+        InvoiceServiceProvider::class
     ])->toArray(),
 
     /*

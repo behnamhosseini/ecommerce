@@ -16,9 +16,6 @@ class ProductServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->loadMigrationsFrom(base_path('\module\product\database\migrations'));
-        Factory::guessFactoryNamesUsing(function (string $modelName) {
-            return 'PRODUCT\\database\\factories\\' . class_basename($modelName) . 'Factory';
-        });
         $this->router();
     }
 
