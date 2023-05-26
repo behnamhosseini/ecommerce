@@ -4,9 +4,12 @@ namespace INVOICE\Providers;
 
 use Illuminate\Database\Eloquent\Factories\Factory as EloquentFactory;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use INVOICE\Controller\Api\v1\InvoiceController;
+use INVOICE\Events\InvoiceActionEvent;
+use INVOICE\Listeners\UpdateInventoryListener;
 use INVOICE\Repository\v1\InvoiceRepository;
 use INVOICE\Repository\v1\InvoiceRepositoryInterface;
 use INVOICE\Service\v1\InvoiceService;
@@ -25,6 +28,10 @@ class InvoiceServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(base_path('\module\invoice\database\migrations'));
         $this->router();
+        Event::listen(
+            InvoiceActionEvent::class,
+            UpdateInventoryListener::class
+        );
     }
 
     public function register()

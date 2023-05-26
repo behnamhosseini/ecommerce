@@ -26,6 +26,11 @@ class ProductServiceProvider extends ServiceProvider
             ProductRepository::class
         );
 
+        $this->app->bind(
+            ProductServiceInterface::class,
+            ProductService::class
+        );
+
 
         $this->app
             ->when(ProductController::class)

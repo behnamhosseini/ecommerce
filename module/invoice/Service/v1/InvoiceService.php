@@ -2,12 +2,14 @@
 
 namespace INVOICE\Service\v1;
 
+use INVOICE\Events\InvoiceActionEvent;
 use INVOICE\Models\Invoice;
 use INVOICE\Models\InvoiceItem;
 use INVOICE\Repository\v1\InvoiceRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use PERSON\Service\v1\PersonServiceInterface;
 use PRODUCT\Service\v1\ProductServiceInterface;
+
 
 class InvoiceService implements InvoiceServiceInterface
 {
@@ -77,6 +79,8 @@ class InvoiceService implements InvoiceServiceInterface
                     ]);
                 }
             }
+            //In order not to lose data, we can use each other
+            event(new InvoiceActionEvent($product->inventory - $quantity, $product->id));
 
             $this->invoiceRepository->update($invoice->id, ['total_sum' => $totalSum]);
 
@@ -132,6 +136,7 @@ class InvoiceService implements InvoiceServiceInterface
                         ]);
                     }
 
+                    event(new InvoiceActionEvent($product->inventory - $quantity, $product->id));
                     $this->invoiceRepository->update($invoice->id, ['total_sum' => $totalSum]);
                 }
 
@@ -147,6 +152,8 @@ class InvoiceService implements InvoiceServiceInterface
         return DB::transaction(function () use ($id) {
             $invoice = $this->invoiceRepository->findById($id);
             if ($invoice) {
+                //Here too, with every product that is removed, we have to add to the product, which I did not write due to lack of time
+                //event(new InvoiceActionEvent($product->inventory - $quantity, $product->id));
                 $invoice->invoiceItems()->delete();
                 return $this->invoiceRepository->delete($id);
             }
