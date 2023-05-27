@@ -9,6 +9,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use INVOICE\database\factories\InvoiceFactory;
 use INVOICE\database\factories\InvoiceItemFactory;
 use INVOICE\Repository\v1\InvoiceRepository;
+use INVOICE\Service\v1\InvoiceService;
+use PERSON\Repository\v1\PersonRepository;
+use PERSON\Service\v1\PersonService;
+use PRODUCT\database\factories\ProductFactory;
+use PRODUCT\Repository\v1\ProductRepository;
+use PRODUCT\Service\v1\ProductService;
 use Tests\TestCase;
 
 class InvoiceRepositoryTest extends TestCase
@@ -56,9 +62,9 @@ class InvoiceRepositoryTest extends TestCase
         $this->assertEquals($data['total_sum'], $createdInvoice->total_sum);
     }
 
-        public function testUpdate()
+    public function testUpdate()
     {
-        $invoice =  app()->make(InvoiceFactory::class)->create();
+        $invoice = app()->make(InvoiceFactory::class)->create();
         $data = [
             'total_sum' => 200,
         ];
@@ -67,7 +73,7 @@ class InvoiceRepositoryTest extends TestCase
         $this->assertEquals($data['total_sum'], $invoice->fresh()->total_sum);
     }
 
-        public function testDelete()
+    public function testDelete()
     {
         $invoice = app()->make(InvoiceFactory::class)->has(app()->make(InvoiceItemFactory::class)->count(3))->create();
         $result = $this->invoiceRepository->delete($invoice->id);
@@ -79,21 +85,28 @@ class InvoiceRepositoryTest extends TestCase
 
     public function testAttachItems()
     {
+        $calculation = new InvoiceService(new InvoiceRepository(),new ProductService(new ProductRepository()),new PersonService(new PersonRepository()));
+
         // Create a mock invoice
         $invoice = app()->make(InvoiceFactory::class)->create();
-
-        // Prepare test data for invoice items
-        $data = [
-            // Invoice item attributes...
+        $product = app()->make(ProductFactory::class)->create();
+        $invoiceItems = [
+            'product_id' => $product->id,
+            'quantity' => $quantity = 5,
+            'price' => $product->selling_price,
+            'amount' => $amount = $calculation->calculateAmount($quantity, $product->selling_price),
+            'discount' => $discount = $calculation->calculateDiscount($amount, $product->discount_percentage),
+            'total_after_discount' => $total_after_discount = $calculation->calculateTotalAfterDiscount($amount, $discount),
+            'tax' => $tax = $calculation->calculateTax($total_after_discount, $product->tax),
+            'total_due' => $calculation->calculateTotalDue($total_after_discount, $tax)
         ];
-
         // Attach items to the invoice using the repository method
-        $this->invoiceRepository->attachItems($invoice, $data);
+        $this->invoiceRepository->attachItems($invoice, $invoiceItems);
 
         // Retrieve the invoice items associated with the invoice
         $invoiceItems = $invoice->invoiceItems;
 
         // Assert that the number of attached items matches the created items
-        $this->assertEquals(count($data), $invoiceItems->count());
+        $this->assertEquals(1, $invoiceItems->count());
     }
 }

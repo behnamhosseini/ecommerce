@@ -26,12 +26,9 @@ class InvoiceRepository  implements InvoiceRepositoryInterface
     public function update(int $id, array $data): bool
     {
         $invoice = Invoice::find($id);
-        $invoice->total_sum = 1;
-        $invoice->save();
         if ($invoice) {
             return $invoice->update($data);
         }
-
         return false;
     }
 

@@ -78,9 +78,7 @@ class InvoiceService implements InvoiceServiceInterface
                 event(new InvoiceActionEvent($product->inventory - $quantity, $product->id));
             }
             //In order not to lose data, we can use each other
-
             $this->invoiceRepository->update($invoice->id, ['total_sum' => $totalSum]);
-
             return $this->invoiceRepository->findById($invoice->id);
         });
 

@@ -7,13 +7,13 @@
     <testsuites>
         <testsuite name="Unit">
 <!--            <directory suffix="Test.php">./tests/Unit</directory>-->
-<!--            <directory suffix="Test.php">./module/person/tests/Unit</directory>-->
-<!--            <directory suffix="Test.php">./module/invoice/tests/Unit</directory>-->
+            <directory suffix="Test.php">./module/person/tests/Unit</directory>
+            <directory suffix="Test.php">./module/invoice/tests/Unit</directory>
 
         </testsuite>
         <testsuite name="Feature">
 <!--            <directory suffix="Test.php">./tests/Feature</directory>-->
-<!--            <directory>./module/person/tests/Feature</directory>-->
+            <directory>./module/person/tests/Feature</directory>
             <directory>./module/invoice/tests/Feature</directory>
         </testsuite>
     </testsuites>

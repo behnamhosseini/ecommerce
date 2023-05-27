@@ -6,13 +6,18 @@ namespace INVOICE\tests\Feature\Service;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use INVOICE\database\factories\InvoiceFactory;
 use INVOICE\Events\InvoiceActionEvent;
 use INVOICE\Models\Invoice;
+use INVOICE\Repository\v1\InvoiceRepository;
 use INVOICE\Repository\v1\InvoiceRepositoryInterface;
 use INVOICE\Service\v1\InvoiceService;
 use PERSON\database\factories\PersonFactory;
+use PERSON\Service\v1\PersonService;
 use PERSON\Service\v1\PersonServiceInterface;
+use PRODUCT\database\factories\ProductFactory;
+use PRODUCT\Service\v1\ProductService;
 use PRODUCT\Service\v1\ProductServiceInterface;
 use Tests\TestCase;
 
@@ -28,9 +33,9 @@ class InvoiceServiceTest extends TestCase
         parent::setUp();
 
         // Create mock objects for the dependencies
-        $this->invoiceRepositoryMock = $this->createMock(InvoiceRepositoryInterface::class);
-        $this->personServiceMock = $this->createMock(PersonServiceInterface::class);
-        $this->productServiceMock = $this->createMock(ProductServiceInterface::class);
+        $this->invoiceRepositoryMock = $this->createMock(InvoiceRepository::class);
+        $this->personServiceMock = $this->createMock(PersonService::class);
+        $this->productServiceMock = $this->createMock(ProductService::class);
 
         // Create an instance of the InvoiceService
         $this->invoiceService = new InvoiceService(
@@ -77,143 +82,90 @@ class InvoiceServiceTest extends TestCase
 
     public function testCreateInvoice()
     {
-        // Prepare test data
+        // Arrange
         $data = [
             'person_id' => 1,
             'items' => [
-                '1' => 5,
+                1 => 2,
+                2 => 3,
             ],
         ];
+        $person = app()->make(PersonFactory::class)->make(['active' => true]);
+        $product1 = app()->make(ProductFactory::class)->make(['inventory' => 5, 'selling_price' => 100, 'discount_percentage' => 10, 'tax' => 5]);
+        $product2 = app()->make(ProductFactory::class)->make(['inventory' => 10, 'selling_price' => 200, 'discount_percentage' => 15, 'tax' => 10]);
+        $invoice = app()->make(InvoiceFactory::class)->make(['id' => 1, 'total_sum' => 1100]);
 
-        // Create a mock person object
-        $person = (object)['active' => true];
-
-        // Create a mock invoice object
-        $invoice = Invoice::make(['id' => 1]);
-
-        // Create a mock product object
-        $product = (object)[
-            'id' => 1,
-            'inventory' => 10,
-            'selling_price' => 100,
-            'discount_percentage' => 10,
-            'tax' => 5
-        ];
-
-        // Set up expectations for the mock objects
-        $this->personServiceMock->expects($this->once())
+        $personServiceMock = $this->createMock(PersonServiceInterface::class);
+        $personServiceMock->expects($this->exactly(2))
             ->method('getPersonById')
-            ->with($data['person_id'])
-            ->willReturn($person);
-
-        $this->invoiceRepositoryMock->expects($this->once())
-            ->method('create')
-            ->with($data)
-            ->willReturn($invoice);
-
-        $this->productServiceMock->expects($this->once())
-            ->method('getProductById')
             ->with(1)
-            ->willReturn($product);
+            ->willReturn((object)['active' => true]);
 
-        $this->invoiceRepositoryMock->expects($this->once())
-            ->method('attachItems')
-            ->with($invoice, $this->isType('array'));
 
-        $this->invoiceRepositoryMock->expects($this->once())
-            ->method('findById')
-            ->with($invoice->id)
-            ->willReturn($invoice);
+        $this->personServiceMock->expects($this->once())->method('getPersonById')->with($data['person_id'])->willReturn($person);
+        $this->productServiceMock->expects($this->exactly(2))->method('getProductById')->willReturn($product1, $product2);
+        $this->invoiceRepositoryMock->expects($this->once())->method('create')->with($data)->willReturn($invoice);
+        $this->invoiceRepositoryMock->expects($this->exactly(2))->method('attachItems');
+        $this->invoiceRepositoryMock->expects($this->once())->method('update')->with($invoice->id, ['total_sum' => 1100]);
+        $this->invoiceRepositoryMock->expects($this->once())->method('findById')->with($invoice->id)->willReturn($invoice);
+        $this->productServiceMock->expects($this->exactly(2))->method('getProductById')->willReturn($product1, $product2);
+        $this->invoiceRepositoryMock->expects($this->once())->method('findById')->with($invoice->id)->willReturn($invoice);
+        $this->productServiceMock->expects($this->exactly(2))->method('getProductById')->willReturn($product1, $product2);
+        Event::fake();
 
-        $this->personServiceMock->expects($this->once())
-            ->method('getPersonById')
-            ->with($data['person_id'])
-            ->willReturn($person);
-
-        $this->productServiceMock->expects($this->once())
-            ->method('getProductById')
-            ->with(1)
-            ->willReturn($product);
-
-        // Invoke the createInvoice method
+        // Act
         $result = $this->invoiceService->createInvoice($data);
-
-        // Assert that the result is the same as the mock invoice
-        $this->assertSame($invoice, $result);
+        // Assert
+        $this->assertEquals($invoice, $result);
+        Event::assertDispatched(InvoiceActionEvent::class, function ($event) use ($product1, $product2) {
+            return $event->getInventory() === ($product1->inventory - 2) &&
+                $event->getProductId() === $product1->id;
+        });
+        Event::assertDispatched(InvoiceActionEvent::class, function ($event) use ($product1, $product2) {
+            return $event->getInventory() === ($product2->inventory - 3) &&
+                $event->getProductId() === $product2->id;
+        });
     }
 
-    public function testUpdateInvoice()
-    {
-        // Prepare test data
-        $id = 1;
-        $data = [
-            'person_id' => 1,
-            'items' => [
-                '1' => 5,
-            ],
-        ];
+       public function testUpdateInvoice()
+       {
+           // Arrange
+           $id = 1;
+           $data = [
+               'person_id' => 1,
+               'items' => [
+                   1 => 2,
+                   2 => 3,
+               ],
+           ];
+           $person = app()->make(PersonFactory::class)->make(['active' => true]);
+           $product1 = app()->make(ProductFactory::class)->make(['inventory' => 5, 'selling_price' => 100, 'discount_percentage' => 10, 'tax' => 5]);
+           $product2 = app()->make(ProductFactory::class)->make(['inventory' => 10, 'selling_price' => 200, 'discount_percentage' => 15, 'tax' => 10]);
+           $invoice = app()->make(InvoiceFactory::class)->make(['id' => 1, 'total_sum' => 1100]);
 
-        // Create a mock person object
-        $person = (object)['active' => true];
+           $this->personServiceMock->expects($this->once())->method('getPersonById')->with($data['person_id'])->willReturn($person);
+           $this->invoiceRepositoryMock->expects($this->once())->method('findById')->with($id)->willReturn($invoice);
+           $this->productServiceMock->expects($this->exactly(2))->method('getProductById')->willReturn($product1, $product2);
+           $this->invoiceRepositoryMock->expects($this->exactly(2))->method('attachItems');
+           $this->invoiceRepositoryMock->expects($this->once())->method('update')->with($invoice->id, ['total_sum' => 1100]);
+           $this->invoiceRepositoryMock->expects($this->once())->method('findById')->with($invoice->id)->willReturn($invoice);
+           $this->productServiceMock->expects($this->exactly(2))->method('getProductById')->willReturn($product1, $product2);
+           Event::fake();
 
-        // Create a mock invoice object
-        $invoice = Invoice::make(['id' => $id]);
+           // Act
+           $result = $this->invoiceService->updateInvoice($id, $data);
 
-        // Create a mock product object
-        $product = (object)[
-            'id' => 1,
-            'inventory' => 10,
-            'selling_price' => 100,
-            'discount_percentage' => 10,
-            'tax' => 5
-        ];
-
-        // Set up expectations for the mock objects
-        $this->personServiceMock->expects($this->once())
-            ->method('getPersonById')
-            ->with($data['person_id'])
-            ->willReturn($person);
-
-        $this->invoiceRepositoryMock->expects($this->once())
-            ->method('findById')
-            ->with($id)
-            ->willReturn($invoice);
-
-        $this->invoiceRepositoryMock->expects($this->once())
-            ->method('update')
-            ->with($invoice->id, $data)
-            ->willReturn($invoice);
-
-        $this->productServiceMock->expects($this->once())
-            ->method('getProductById')
-            ->with(1)
-            ->willReturn($product);
-
-        $this->invoiceRepositoryMock->expects($this->once())
-            ->method('attachItems')
-            ->with($invoice, $this->isType('array'));
-
-        $this->invoiceRepositoryMock->expects($this->once())
-            ->method('findById')
-            ->with($invoice->id)
-            ->willReturn($invoice);
-
-        $this->personServiceMock->expects($this->once())
-            ->method('getPersonById')
-            ->with($data['person_id'])
-            ->willReturn($person);
-
-        $this->productServiceMock->expects($this->once())
-            ->method('getProductById')
-            ->with(1)
-            ->willReturn($product);
-
-        // Invoke the updateInvoice method
-        $result = $this->invoiceService->updateInvoice($id, $data);
-
-        // Assert that the result is the same as the mock invoice
-        $this->assertSame($invoice, $result);
-    }
+           // Assert
+           $this->assertEquals($invoice, $result);
+           Event::assertDispatched(InvoiceActionEvent::class, function ($event) use ($product1, $product2) {
+               return $event->getInventory() === ($product1->inventory - 2) &&
+                   $event->getProductId() === $product1->id;
+           });
+           Event::assertDispatched(InvoiceActionEvent::class, function ($event) use ($product1, $product2) {
+               return $event->getInventory() === ($product2->inventory - 3) &&
+                   $event->getProductId() === $product2->id;
+           });
+       }
 
     public function testDeleteInvoice()
     {
