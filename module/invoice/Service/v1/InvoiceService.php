@@ -19,8 +19,8 @@ class InvoiceService implements InvoiceServiceInterface
 
     public function __construct(
         InvoiceRepositoryInterface $invoiceRepository,
-        ProductServiceInterface $productService,
-        PersonServiceInterface $personService,
+        ProductServiceInterface    $productService,
+        PersonServiceInterface     $personService,
     )
     {
         $this->invoiceRepository = $invoiceRepository;
@@ -45,7 +45,6 @@ class InvoiceService implements InvoiceServiceInterface
             if (!$person->active) {
                 return "User is disabled";
             }
-
             $invoice = $this->invoiceRepository->create($data);
             $notBuyable = [];
             $totalSum = 0;
@@ -65,22 +64,20 @@ class InvoiceService implements InvoiceServiceInterface
                 $tax = $this->calculateTax($totalAfterDiscount, $product->tax);
                 $totalDue = $this->calculateTotalDue($totalAfterDiscount, $tax);
                 $totalSum += $totalDue;
-
-                if ($product) {
-                    $invoice->invoiceItems()->create([
-                        'product_id' => $product->id,
-                        'quantity' => $quantity,
-                        'price' => $product->selling_price,
-                        'amount' => $amount,
-                        'discount' => $discount,
-                        'total_after_discount' => $totalAfterDiscount,
-                        'tax' => $tax,
-                        'total_due' => $totalDue,
-                    ]);
-                }
+                $invoiceItem = [
+                    'product_id' => $product->id,
+                    'quantity' => $quantity,
+                    'price' => $product->selling_price,
+                    'amount' => $amount,
+                    'discount' => $discount,
+                    'total_after_discount' => $totalAfterDiscount,
+                    'tax' => $tax,
+                    'total_due' => $totalDue,
+                ];
+                $this->invoiceRepository->attachItems($invoice, $invoiceItem);
+                event(new InvoiceActionEvent($product->inventory - $quantity, $product->id));
             }
             //In order not to lose data, we can use each other
-            event(new InvoiceActionEvent($product->inventory - $quantity, $product->id));
 
             $this->invoiceRepository->update($invoice->id, ['total_sum' => $totalSum]);
 
@@ -107,8 +104,8 @@ class InvoiceService implements InvoiceServiceInterface
                     $totalSum = 0;
 
                     foreach ($data['items'] as $productId => $quantity) {
-                        $productId = (int) $productId;
-                        $quantity = (int) $quantity;
+                        $productId = (int)$productId;
+                        $quantity = (int)$quantity;
                         $product = $this->productService->getProductById($productId);
 
                         if ($quantity > $product->inventory) {
@@ -124,7 +121,7 @@ class InvoiceService implements InvoiceServiceInterface
                         $totalDue = $this->calculateTotalDue($totalAfterDiscount, $tax);
                         $totalSum += $totalDue;
 
-                        $invoice->invoiceItems()->create([
+                        $invoiceItem = [
                             'product_id' => $product->id,
                             'quantity' => $quantity,
                             'price' => $product->selling_price,
@@ -133,10 +130,11 @@ class InvoiceService implements InvoiceServiceInterface
                             'total_after_discount' => $totalAfterDiscount,
                             'tax' => $tax,
                             'total_due' => $totalDue,
-                        ]);
+                        ];
+                        $this->invoiceRepository->attachItems($invoice, $invoiceItem);
+                        event(new InvoiceActionEvent($product->inventory - $quantity, $product->id));
                     }
 
-                    event(new InvoiceActionEvent($product->inventory - $quantity, $product->id));
                     $this->invoiceRepository->update($invoice->id, ['total_sum' => $totalSum]);
                 }
 

@@ -4,9 +4,11 @@
 namespace INVOICE\Repository\v1;
 
 
+use INVOICE\Models\Invoice;
+
 interface  InvoiceRepositoryInterface
 {
-    public function create(array $data);
+    public function create(array $data): Invoice;
 
     public function update(int $id, array $data);
 
@@ -15,4 +17,6 @@ interface  InvoiceRepositoryInterface
     public function findById(int $id);
 
     public function getAll();
+
+    public function attachItems(Invoice $invoice,$data);
 }

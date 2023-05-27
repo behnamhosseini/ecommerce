@@ -76,4 +76,24 @@ class InvoiceRepositoryTest extends TestCase
 //        $this->assertDeleted($invoice);
 //        $this->assertDeleted($invoice->invoceItems);
     }
+
+    public function testAttachItems()
+    {
+        // Create a mock invoice
+        $invoice = app()->make(InvoiceFactory::class)->create();
+
+        // Prepare test data for invoice items
+        $data = [
+            // Invoice item attributes...
+        ];
+
+        // Attach items to the invoice using the repository method
+        $this->invoiceRepository->attachItems($invoice, $data);
+
+        // Retrieve the invoice items associated with the invoice
+        $invoiceItems = $invoice->invoiceItems;
+
+        // Assert that the number of attached items matches the created items
+        $this->assertEquals(count($data), $invoiceItems->count());
+    }
 }

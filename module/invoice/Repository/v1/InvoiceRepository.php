@@ -45,4 +45,9 @@ class InvoiceRepository  implements InvoiceRepositoryInterface
 
         return false;
     }
+
+    public function attachItems(Invoice $invoice,$data) :void
+    {
+        $invoice->invoiceItems()->create($data);
+    }
 }

@@ -11,6 +11,7 @@ class Invoice extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'person_id',
         'total_sum',
     ];
